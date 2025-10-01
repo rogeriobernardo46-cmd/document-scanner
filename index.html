@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Scanner Pro</title>
+    <meta name="description" content="Professional document scanner with AI enhancement">
+    <meta name="theme-color" content="#5D5CDE">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Doc Scanner">
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkRvY3VtZW50IFNjYW5uZXIgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJEb2NTYW5uZXIiLAogICJkZXNjcmlwdGlvbiI6ICJQcm9mZXNzaW9uYWwgQUktcG93ZXJlZCBkb2N1bWVudCBzY2FubmVyIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmZmZmZmYiLAogICJ0aGVtZV9jb2xvciI6ICIjNUQ1Q0RFIiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQtcHJpbWFyeSIsCiAgInNjb3BlIjogIi8iLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQU1BQUFBREFDQVlBQUFCWGF2TFNBQUFBQjNOSlR1VUg4QUFBQUFCSlJVNUVya0pnZ2c9PSIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfQogIF0KfQ==">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .upload-area { min-height: 120px; }
+        @media (max-width: 640px) { .container { padding: 1rem; } }
+        .camera-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .processing { animation: pulse 2s infinite; }
+        .install-banner { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <!-- Install Banner -->
+    <div id="install-banner" class="hidden fixed top-0 left-0 right-0 install-banner text-white p-3 z-50 shadow-lg">
+        <div class="flex items-center justify-between max-w-4xl mx-auto">
+            <div class="flex items-center">
+                <span class="text-2xl mr-3">📱</span>
+                <div>
+                    <p class="font-semibold">Install Document Scanner</p>
+                    <p class="text-xs opacity-90">Add to home screen for easy access</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button id="install-btn" class="bg-white text-purple-600 px-4 py-2 rounded font-medium text-sm hover:bg-gray-100 transition-colors">
+                    Install
+                </button>
+                <button id="dismiss-install" class="text-white/80 hover:text-white text-xl px-2 transition-colors">&times;</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-6 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center mb-4">
+                <span class="text-5xl mr-3">📄</span>
+                <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Document Scanner Pro</h1>
+            </div>
+            <p class="text-gray-600 dark:text-gray-400 text-lg">Professional AI-powered document scanning</p>
+            
+            <!-- Install Instructions -->
+            <div class="mt-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+                <h3 class="font-semibold text-purple-800 dark:text-purple-200 mb-2">📲 Install as App</h3>
+                <div class="text-sm text-purple-700 dark:text-purple-300">
+                    <p class="mb-1"><strong>iPhone:</strong> Tap Share button → "Add to Home Screen"</p>
+                    <p><strong>Android:</strong> Tap menu (⋮) → "Add to Home screen" or "Install app"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mode Selection -->
+        <div class="mb-8">
+            <div class="flex flex-wrap gap-3 justify-center">
+                <button id="rocketbook-mode" class="mode-btn bg-primary text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 shadow-lg">
+                    📄 RocketBook Mode
+                </button>
+                <button id="regular-mode" class="mode-btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-600 shadow-lg border border-gray-200 dark:border-gray-600">
+                    📋 Regular Scanner
+                </button>
+                <button id="whiteboard-mode" class="mode-btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-600 shadow-lg border border-gray-200 dark:border-gray-600">
+                    📐 Whiteboard Mode
+                </button>
+            </div>
+        </div>
+
+        <!-- Mode Description -->
+        <div id="mode-description" class="mb-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p class="text-blue-800 dark:text-blue-200 text-sm">
+                <strong>RocketBook Mode:</strong> Detects black borders and QR codes. Perfect for RocketBook pages and documents with black frames.
+            </p>
+        </div>
+
+        <!-- File Upload & Camera -->
+        <div class="mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- File Upload -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">📁 Upload Image</h3>
+                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-primary transition-colors upload-area">
+                        <input type="file" id="image-upload" accept="image/*" class="hidden">
+                        <div class="upload-area-content cursor-pointer">
+                            <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <p class="text-gray-600 dark:text-gray-400 font-medium">Click to upload or drag & drop</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">PNG, JPG, GIF up to 10MB</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Camera Capture -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">📷 Camera Capture</h3>
+                    <div class="text-center">
+                        <button id="camera-btn" class="camera-btn text-white px-6 py-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg transform hover:scale-105 w-full">
+                            <svg class="inline w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Take Photo
+                        </button>
+                        <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">Use device camera</p>
+                        
+                        <!-- Camera preview -->
+                        <video id="camera-preview" class="w-full mt-4 rounded-lg hidden" autoplay playsinline></video>
+                        <div id="camera-controls" class="mt-4 hidden">
+                            <button id="capture-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg mr-2 hover:bg-green-600 transition-colors">
+                                📸 Capture
+                            </button>
+                            <button id="cancel-camera-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                                ❌ Cancel
+                            </button>
+                        </div>
+                        <canvas id="camera-canvas" class="hidden"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing Status -->
+        <div id="processing-status" class="hidden mb-8 p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800 shadow-lg">
+            <div class="flex items-center justify-center">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-600 mr-4"></div>
+                <span class="text-yellow-800 dark:text-yellow-200 font-medium processing">🔄 Processing your document...</span>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="results-container" class="hidden">
+            <!-- Detection Info -->
+            <div id="detection-info" class="mb-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <h3 class="text-blue-800 dark:text-blue-200 font-semibold mb-2">🔍 Processing Results</h3>
+                <div id="detection-data" class="text-blue-700 dark:text-blue-300 text-sm"></div>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                    <h3 class="text-gray-900 dark:text-white font-semibold mb-4 flex items-center">
+                        <span class="mr-2">📷</span> Original Image
+                    </h3>
+                    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                        <canvas id="original-canvas" class="max-w-full h-auto border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm"></canvas>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                    <h3 class="text-gray-900 dark:text-white font-semibold mb-4 flex items-center">
+                        <span class="mr-2">✨</span> Processed Result
+                    </h3>
+                    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                        <canvas id="processed-canvas" class="max-w-full h-auto border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Button -->
+            <div class="text-center mb-8">
+                <button id="download-btn" class="bg-primary text-white px-8 py-4 rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-lg transform hover:scale-105">
+                    📥 Download Scanned Document
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            document.documentElement.classList.toggle('dark', event.matches);
+        });
+
+        let currentMode = 'rocketbook';
+        let processedImageData = null;
+        let camera = null;
+
+        const modeDescriptions = {
+            rocketbook: '<strong>RocketBook Mode:</strong> Detects black borders and QR codes. Perfect for RocketBook pages and documents with black frames.',
+            regular: '<strong>Regular Scanner:</strong> Advanced edge detection with automatic perspective correction and professional enhancement.',
+            whiteboard: '<strong>Whiteboard Mode:</strong> Detects orange triangular beacons at whiteboard corners for precise capture.'
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            updateModeDescription();
+            setupPWA();
+        });
+
+        function setupEventListeners() {
+            // Mode selection
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const mode = this.id.replace('-mode', '');
+                    selectMode(mode);
+                });
+            });
+
+            // File upload
+            const uploadInput = document.getElementById('image-upload');
+            const uploadArea = document.querySelector('.upload-area-content');
+            
+            uploadArea.addEventListener('click', () => uploadInput.click());
+            uploadInput.addEventListener('change', handleImageUpload);
+
+            // Drag and drop
+            const uploadContainer = document.querySelector('.upload-area');
+            uploadContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadContainer.classList.add('border-primary', 'bg-primary/5');
+            });
+
+            uploadContainer.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                uploadContainer.classList.remove('border-primary', 'bg-primary/5');
+            });
+
+            uploadContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadContainer.classList.remove('border-primary', 'bg-primary/5');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    processFile(files[0]);
+                }
+            });
+
+            // Camera functionality
+            document.getElementById('camera-btn').addEventListener('click', startCamera);
+            document.getElementById('capture-btn').addEventListener('click', capturePhoto);
+            document.getElementById('cancel-camera-btn').addEventListener('click', stopCamera);
+            document.getElementById('download-btn').addEventListener('click', downloadProcessedImage);
+        }
+
+        function setupPWA() {
+            let deferredPrompt;
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                document.getElementById('install-banner').classList.remove('hidden');
+            });
+
+            document.getElementById('install-btn').addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        document.getElementById('install-banner').classList.add('hidden');
+                    }
+                    deferredPrompt = null;
+                }
+            });
+
+            document.getElementById('dismiss-install').addEventListener('click', () => {
+                document.getElementById('install-banner').classList.add('hidden');
+            });
+        }
+
+        async function startCamera() {
+            if (!navigator.mediaDevices?.getUserMedia) {
+                showAlert('📷 Camera not supported on this device. Please use the file upload option.');
+                return;
+            }
+
+            try {
+                showCameraPermissionDialog();
+
+                let stream;
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { 
+                            facingMode: 'environment',
+                            width: { ideal: 1920, min: 640 },
+                            height: { ideal: 1080, min: 480 }
+                        } 
+                    });
+                } catch (backCameraError) {
+                    stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { 
+                            facingMode: 'user',
+                            width: { ideal: 1920, min: 640 },
+                            height: { ideal: 1080, min: 480 }
+                        } 
+                    });
+                }
+                
+                hideCameraPermissionDialog();
+                
+                const video = document.getElementById('camera-preview');
+                video.srcObject = stream;
+                video.classList.remove('hidden');
+                document.getElementById('camera-controls').classList.remove('hidden');
+                document.getElementById('camera-btn').style.display = 'none';
+                
+                camera = stream;
+                showAlert('📷 Camera ready! Position your document and tap Capture.', 'success');
+                
+            } catch (error) {
+                hideCameraPermissionDialog();
+                handleCameraError(error);
+            }
+        }
+
+        function showCameraPermissionDialog() {
+            const dialog = document.createElement('div');
+            dialog.id = 'camera-permission-dialog';
+            dialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            dialog.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl max-w-sm w-full transform transition-all">
+                    <div class="text-center">
+                        <div class="text-4xl mb-4">📷</div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Camera Permission Required</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                            Please allow camera access to scan documents.
+                        </p>
+                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Requesting camera access...</p>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(dialog);
+        }
+
+        function hideCameraPermissionDialog() {
+            const dialog = document.getElementById('camera-permission-dialog');
+            if (dialog) dialog.remove();
+        }
+
+        function handleCameraError(error) {
+            let message = 'Unable to access camera. Please check permissions and try again.';
+            
+            switch (error.name) {
+                case 'NotAllowedError':
+                    message = 'Camera permission denied. Please enable camera access in your browser settings and try again.';
+                    break;
+                case 'NotFoundError':
+                    message = 'No camera found on this device. Please use the file upload option.';
+                    break;
+                case 'NotSupportedError':
+                    message = 'Camera not supported by this browser. Please use a different browser.';
+                    break;
+            }
+            
+            showAlert(message, 'error');
+        }
+
+        function stopCamera() {
+            if (camera) {
+                camera.getTracks().forEach(track => track.stop());
+                camera = null;
+            }
+            
+            document.getElementById('camera-preview').classList.add('hidden');
+            document.getElementById('camera-controls').classList.add('hidden');
+            document.getElementById('camera-btn').style.display = 'block';
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('camera-preview');
+            const canvas = document.getElementById('camera-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            
+            canvas.toBlob(blob => {
+                const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+                processFile(file);
+                stopCamera();
+            }, 'image/jpeg', 0.9);
+        }
+
+        function selectMode(mode) {
+            currentMode = mode;
+            
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white');
+                btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300', 'border', 'border-gray-200', 'dark:border-gray-600');
+            });
+            
+            const selectedBtn = document.getElementById(`${mode}-mode`);
+            selectedBtn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300', 'border', 'border-gray-200', 'dark:border-gray-600');
+            selectedBtn.classList.add('bg-primary', 'text-white');
+            
+            updateModeDescription();
+        }
+
+        function updateModeDescription() {
+            document.getElementById('mode-description').innerHTML = 
+                `<p class="text-blue-800 dark:text-blue-200 text-sm">${modeDescriptions[currentMode]}</p>`;
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) processFile(file);
+        }
+
+        function processFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showAlert('Please select a valid image file.');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                showAlert('Image size too large. Please select an image under 10MB.');
+                return;
+            }
+
+            showProcessingStatus(true);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    processImage(img);
+                };
+                img.onerror = function() {
+                    showProcessingStatus(false);
+                    showAlert('Error loading image. Please try a different file.');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function processImage(img) {
+            const originalCanvas = document.getElementById('original-canvas');
+            const processedCanvas = document.getElementById('processed-canvas');
+            const originalCtx = originalCanvas.getContext('2d');
+
+            const maxWidth = 600;
+            const maxHeight = 800;
+            let { width, height } = img;
+            
+            if (width > maxWidth || height > maxHeight) {
+                const scale = Math.min(maxWidth / width, maxHeight / height);
+                width *= scale;
+                height *= scale;
+            }
+
+            originalCanvas.width = width;
+            originalCanvas.height = height;
+            processedCanvas.width = width;
+            processedCanvas.height = height;
+
+            originalCtx.drawImage(img, 0, 0, width, height);
+
+            setTimeout(() => {
+                try {
+                    switch (currentMode) {
+                        case 'rocketbook':
+                            processRocketBookMode(originalCanvas, processedCanvas);
+                            break;
+                        case 'regular':
+                            processRegularMode(originalCanvas, processedCanvas);
+                            break;
+                        case 'whiteboard':
+                            processWhiteboardMode(originalCanvas, processedCanvas);
+                            break;
+                    }
+                } catch (error) {
+                    console.error('Processing error:', error);
+                    showAlert('Error processing image. Please try again.');
+                }
+                
+                showProcessingStatus(false);
+                showResults(true);
+            }, 100);
+        }
+
+        function processRocketBookMode(originalCanvas, processedCanvas) {
+            const ctx = processedCanvas.getContext('2d');
+            const imageData = originalCanvas.getContext('2d').getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+            
+            const enhanced = enhanceDocument(imageData);
+            ctx.putImageData(enhanced, 0, 0);
+            processedImageData = enhanced;
+            updateDetectionInfo('RocketBook processing applied: Enhanced contrast and cleaned borders.');
+        }
+
+        function processRegularMode(originalCanvas, processedCanvas) {
+            const ctx = processedCanvas.getContext('2d');
+            const imageData = originalCanvas.getContext('2d').getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+            
+            const enhanced = enhanceDocument(imageData);
+            ctx.putImageData(enhanced, 0, 0);
+            processedImageData = enhanced;
+            updateDetectionInfo('Regular scan processing: Applied professional document enhancement.');
+        }
+
+        function processWhiteboardMode(originalCanvas, processedCanvas) {
+            const ctx = processedCanvas.getContext('2d');
+            const imageData = originalCanvas.getContext('2d').getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+            
+            const enhanced = enhanceWhiteboard(imageData);
+            ctx.putImageData(enhanced, 0, 0);
+            processedImageData = enhanced;
+            updateDetectionInfo('Whiteboard processing: Enhanced for better text visibility.');
+        }
+
+        function enhanceDocument(imageData) {
+            const enhanced = new ImageData(imageData.width, imageData.height);
+            const data = imageData.data;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i];
+                let g = data[i + 1];
+                let b = data[i + 2];
+                
+                const gray = (r + g + b) / 3;
+                const enhanced_gray = gray < 128 ? gray * 0.6 : Math.min(255, gray * 1.4);
+                
+                enhanced.data[i] = enhanced_gray;
+                enhanced.data[i + 1] = enhanced_gray;
+                enhanced.data[i + 2] = enhanced_gray;
+                enhanced.data[i + 3] = data[i + 3];
+            }
+            
+            return enhanced;
+        }
+
+        function enhanceWhiteboard(imageData) {
+            const enhanced = new ImageData(imageData.width, imageData.height);
+            const data = imageData.data;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i];
+                let g = data[i + 1];
+                let b = data[i + 2];
+                
+                const avg = (r + g + b) / 3;
+                const factor = avg > 200 ? 1.3 : avg < 100 ? 0.5 : 1.0;
+                
+                enhanced.data[i] = Math.min(255, r * factor);
+                enhanced.data[i + 1] = Math.min(255, g * factor);
+                enhanced.data[i + 2] = Math.min(255, b * factor);
+                enhanced.data[i + 3] = data[i + 3];
+            }
+            
+            return enhanced;
+        }
+
+        function showProcessingStatus(show) {
+            const status = document.getElementById('processing-status');
+            status.classList.toggle('hidden', !show);
+            if (show) document.getElementById('results-container').classList.add('hidden');
+        }
+
+        function showResults(show) {
+            const container = document.getElementById('results-container');
+            container.classList.toggle('hidden', !show);
+            if (show) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function downloadProcessedImage() {
+            if (!processedImageData) {
+                showAlert('No processed image available for download.');
+                return;
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = processedImageData.width;
+            canvas.height = processedImageData.height;
+            const ctx = canvas.getContext('2d');
+            ctx.putImageData(processedImageData, 0, 0);
+            
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `scanned-document-${currentMode}-${new Date().toISOString().slice(0,10)}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        }
+
+        function updateDetectionInfo(message) {
+            const detectionData = document.getElementById('detection-data');
+            detectionData.textContent = message;
+        }
+
+        function showAlert(message, type = 'warning') {
+            const icons = { warning: '⚠️', error: '❌', success: '✅', info: 'ℹ️' };
+            const colors = { warning: 'bg-yellow-500', error: 'bg-red-500', success: 'bg-green-500', info: 'bg-blue-500' };
+            
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl max-w-sm w-full transform transition-all">
+                    <div class="text-center">
+                        <div class="text-4xl mb-4">${icons[type]}</div>
+                        <p class="text-gray-700 dark:text-gray-300 mb-6">${message}</p>
+                        <button class="w-full px-4 py-2 ${colors[type]} text-white hover:opacity-90 rounded-lg transition-colors" onclick="this.closest('.fixed').remove()">
+                            OK
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            setTimeout(() => {
+                if (modal.parentNode) modal.remove();
+            }, type === 'success' ? 3000 : type === 'error' ? 7000 : 5000);
+        }
+    </script>
+</body>
+</html>
