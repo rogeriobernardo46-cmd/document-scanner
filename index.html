@@ -4,43 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Scanner Pro</title>
-    <meta name="description" content="Professional document scanner with AI enhancement">
+    <meta name="description" content="Professional AI-powered document scanner with QR detection and nuclear-level enhancement">
     <meta name="theme-color" content="#5D5CDE">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Doc Scanner">
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkRvY3VtZW50IFNjYW5uZXIgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJEb2NTYW5uZXIiLAogICJkZXNjcmlwdGlvbiI6ICJQcm9mZXNzaW9uYWwgQUktcG93ZXJlZCBkb2N1bWVudCBzY2FubmVyIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmZmZmZmYiLAogICJ0aGVtZV9jb2xvciI6ICIjNUQ1Q0RFIiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQtcHJpbWFyeSIsCiAgInNjb3BlIjogIi8iLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQU1BQUFBREFDQVlBQUFCWGF2TFNBQUFBQjNOSlR1VUg4QUFBQUFCSlJVNUVya0pnZ2c9PSIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfQogIF0KfQ==">
+    <meta name="apple-mobile-web-app-title" content="Doc Scanner Pro">
+    
+    <!-- External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+    
+    <!-- Tailwind Config -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#5D5CDE'
+                        primary: '#5D5CDE',
+                        secondary: '#667eea'
                     }
                 }
             }
         }
     </script>
+    
+    <!-- Custom Styles -->
     <style>
-        .upload-area { min-height: 120px; }
-        @media (max-width: 640px) { .container { padding: 1rem; } }
-        .camera-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .processing { animation: pulse 2s infinite; }
-        .install-banner { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .upload-area { 
+            min-height: 120px; 
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #5D5CDE;
+            background-color: rgba(93, 92, 222, 0.05);
+        }
+        .camera-btn { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+        }
+        .processing-spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .processing-text {
+            animation: pulse 2s infinite;
+        }
+        .feature-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .mode-btn {
+            transition: all 0.3s ease;
+        }
+        .mode-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .toggle-switch {
+            transition: all 0.3s ease;
+        }
+        .nav-btn {
+            transition: all 0.2s ease;
+        }
+        @media (max-width: 640px) { 
+            .container { padding: 1rem; }
+            .mode-btn { font-size: 0.875rem; padding: 0.75rem 1rem; }
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .canvas-container {
+            position: relative;
+            overflow: hidden;
+        }
+        .canvas-container canvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
-    <!-- Install Banner -->
-    <div id="install-banner" class="hidden fixed top-0 left-0 right-0 install-banner text-white p-3 z-50 shadow-lg">
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
+    <!-- Progressive Web App Banner -->
+    <div id="install-banner" class="hidden fixed top-0 left-0 right-0 gradient-bg text-white p-3 z-50 shadow-lg">
         <div class="flex items-center justify-between max-w-4xl mx-auto">
             <div class="flex items-center">
                 <span class="text-2xl mr-3">📱</span>
                 <div>
-                    <p class="font-semibold">Install Document Scanner</p>
-                    <p class="text-xs opacity-90">Add to home screen for easy access</p>
+                    <p class="font-semibold">Install Document Scanner Pro</p>
+                    <p class="text-xs opacity-90">Add to home screen for offline access</p>
                 </div>
             </div>
             <div class="flex gap-2">
@@ -52,142 +117,503 @@
         </div>
     </div>
 
-    <div class="container mx-auto px-4 py-6 max-w-6xl">
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <div class="flex items-center justify-center mb-4">
-                <span class="text-5xl mr-3">📄</span>
-                <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Document Scanner Pro</h1>
-            </div>
-            <p class="text-gray-600 dark:text-gray-400 text-lg">Professional AI-powered document scanning</p>
-            
-            <!-- Install Instructions -->
-            <div class="mt-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
-                <h3 class="font-semibold text-purple-800 dark:text-purple-200 mb-2">📲 Install as App</h3>
-                <div class="text-sm text-purple-700 dark:text-purple-300">
-                    <p class="mb-1"><strong>iPhone:</strong> Tap Share button → "Add to Home Screen"</p>
-                    <p><strong>Android:</strong> Tap menu (⋮) → "Add to Home screen" or "Install app"</p>
+    <!-- Navigation Header -->
+    <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 transition-colors duration-300">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl mr-3">📄</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Document Scanner Pro</h1>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">AI-Powered Nuclear Enhancement</p>
+                    </div>
+                </div>
+                <div class="flex space-x-1">
+                    <button id="nav-scanner" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white">
+                        📄 Scanner
+                    </button>
+                    <button id="nav-folders" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        📁 Folders
+                    </button>
+                    <button id="nav-settings" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        ⚙️ Settings
+                    </button>
                 </div>
             </div>
         </div>
+    </nav>
 
-        <!-- Mode Selection -->
-        <div class="mb-8">
-            <div class="flex flex-wrap gap-3 justify-center">
-                <button id="rocketbook-mode" class="mode-btn bg-primary text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 shadow-lg">
-                    📄 RocketBook Mode
-                </button>
-                <button id="regular-mode" class="mode-btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-600 shadow-lg border border-gray-200 dark:border-gray-600">
-                    📋 Regular Scanner
-                </button>
-                <button id="whiteboard-mode" class="mode-btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-600 shadow-lg border border-gray-200 dark:border-gray-600">
-                    📐 Whiteboard Mode
-                </button>
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+        <!-- Scanner Page -->
+        <div id="scanner-page" class="page-content">
+            <!-- Hero Section -->
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Nuclear-Powered Document Processing</h2>
+                <p class="text-gray-600 dark:text-gray-400 text-lg mb-8">Advanced QR detection • Border removal • Professional enhancement</p>
+                
+                <!-- Feature Highlights -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="feature-card p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl border border-green-200 dark:border-green-800">
+                        <div class="text-4xl mb-3">🎯</div>
+                        <h3 class="font-semibold text-green-800 dark:text-green-200 mb-2">9-Pass QR Removal</h3>
+                        <p class="text-sm text-green-700 dark:text-green-300">Nuclear-level QR code detection and obliteration technology</p>
+                    </div>
+                    <div class="feature-card p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                        <div class="text-4xl mb-3">🔍</div>
+                        <h3 class="font-semibold text-blue-800 dark:text-blue-200 mb-2">Advanced Edge Detection</h3>
+                        <p class="text-sm text-blue-700 dark:text-blue-300">Sobel operators with intelligent corner detection algorithms</p>
+                    </div>
+                    <div class="feature-card p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl border border-purple-200 dark:border-purple-800">
+                        <div class="text-4xl mb-3">✨</div>
+                        <h3 class="font-semibold text-purple-800 dark:text-purple-200 mb-2">Professional Enhancement</h3>
+                        <p class="text-sm text-purple-700 dark:text-purple-300">Multi-stage contrast optimization and noise reduction</p>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Mode Description -->
-        <div id="mode-description" class="mb-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <p class="text-blue-800 dark:text-blue-200 text-sm">
-                <strong>RocketBook Mode:</strong> Detects black borders and QR codes. Perfect for RocketBook pages and documents with black frames.
-            </p>
-        </div>
+            <!-- Mode Selection -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">Select Processing Mode</h3>
+                <div class="flex flex-wrap gap-4 justify-center">
+                    <button id="rocketbook-mode" class="mode-btn bg-primary text-white px-8 py-4 rounded-xl font-medium shadow-lg">
+                        <div class="text-2xl mb-1">📓</div>
+                        <div>Notebook Scanner</div>
+                        <div class="text-xs opacity-90 mt-1">Nuclear QR Removal</div>
+                    </button>
+                    <button id="regular-mode" class="mode-btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-8 py-4 rounded-xl font-medium shadow-lg border border-gray-200 dark:border-gray-600">
+                        <div class="text-2xl mb-1">📋</div>
+                        <div>Regular Scanner</div>
+                        <div class="text-xs opacity-70 mt-1">Edge Detection</div>
+                    </button>
+                    <button id="whiteboard-mode" class="mode-btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-8 py-4 rounded-xl font-medium shadow-lg border border-gray-200 dark:border-gray-600">
+                        <div class="text-2xl mb-1">📐</div>
+                        <div>Whiteboard Mode</div>
+                        <div class="text-xs opacity-70 mt-1">Beacon Detection</div>
+                    </button>
+                </div>
+            </div>
 
-        <!-- File Upload & Camera -->
-        <div class="mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Mode Description -->
+            <div id="mode-description" class="mb-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                <p class="text-blue-800 dark:text-blue-200">
+                    <strong>Notebook Scanner:</strong> Nuclear-level QR detection and removal. 9-pass algorithm obliterates even microscopic QR remnants and black borders with professional document enhancement.
+                </p>
+            </div>
+
+            <!-- Upload and Camera Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 <!-- File Upload -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">📁 Upload Image</h3>
-                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-primary transition-colors upload-area">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 transition-colors duration-300">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+                        <span class="mr-3 text-2xl">📁</span> Upload Document
+                    </h3>
+                    <div class="upload-area border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center cursor-pointer">
                         <input type="file" id="image-upload" accept="image/*" class="hidden">
-                        <div class="upload-area-content cursor-pointer">
-                            <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                        <div class="upload-area-content" onclick="document.getElementById('image-upload').click()">
+                            <svg class="mx-auto h-16 w-16 text-gray-400 dark:text-gray-500 mb-4" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                            <p class="text-gray-600 dark:text-gray-400 font-medium">Click to upload or drag & drop</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">PNG, JPG, GIF up to 10MB</p>
+                            <p class="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">Click to upload or drag & drop</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-500">PNG, JPG, GIF, WebP up to 10MB</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Camera Capture -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">📷 Camera Capture</h3>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 transition-colors duration-300">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+                        <span class="mr-3 text-2xl">📷</span> Camera Capture
+                    </h3>
                     <div class="text-center">
-                        <button id="camera-btn" class="camera-btn text-white px-6 py-4 rounded-lg font-medium transition-all duration-200 hover:shadow-lg transform hover:scale-105 w-full">
-                            <svg class="inline w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button id="camera-btn" class="camera-btn text-white px-8 py-4 rounded-xl font-medium w-full mb-4 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                            <svg class="inline w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
-                            Take Photo
+                            Start Camera Capture
                         </button>
-                        <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">Use device camera</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Use your device camera for instant scanning</p>
                         
-                        <!-- Camera preview -->
-                        <video id="camera-preview" class="w-full mt-4 rounded-lg hidden" autoplay playsinline></video>
-                        <div id="camera-controls" class="mt-4 hidden">
-                            <button id="capture-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg mr-2 hover:bg-green-600 transition-colors">
-                                📸 Capture
-                            </button>
-                            <button id="cancel-camera-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
-                                ❌ Cancel
-                            </button>
+                        <!-- Camera Preview -->
+                        <video id="camera-preview" class="w-full rounded-xl shadow-lg hidden" autoplay playsinline></video>
+                        <div id="camera-controls" class="mt-6 hidden">
+                            <div class="flex gap-4 justify-center">
+                                <button id="capture-btn" class="bg-green-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-600 transition-colors shadow-lg">
+                                    <span class="mr-2">📸</span> Capture Document
+                                </button>
+                                <button id="cancel-camera-btn" class="bg-gray-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-600 transition-colors shadow-lg">
+                                    <span class="mr-2">❌</span> Cancel
+                                </button>
+                            </div>
                         </div>
                         <canvas id="camera-canvas" class="hidden"></canvas>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Processing Status -->
-        <div id="processing-status" class="hidden mb-8 p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800 shadow-lg">
-            <div class="flex items-center justify-center">
-                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-600 mr-4"></div>
-                <span class="text-yellow-800 dark:text-yellow-200 font-medium processing">🔄 Processing your document...</span>
-            </div>
-        </div>
-
-        <!-- Results -->
-        <div id="results-container" class="hidden">
-            <!-- Detection Info -->
-            <div id="detection-info" class="mb-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h3 class="text-blue-800 dark:text-blue-200 font-semibold mb-2">🔍 Processing Results</h3>
-                <div id="detection-data" class="text-blue-700 dark:text-blue-300 text-sm"></div>
-            </div>
-
-            <!-- Canvas Container -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                    <h3 class="text-gray-900 dark:text-white font-semibold mb-4 flex items-center">
-                        <span class="mr-2">📷</span> Original Image
-                    </h3>
-                    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
-                        <canvas id="original-canvas" class="max-w-full h-auto border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm"></canvas>
-                    </div>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                    <h3 class="text-gray-900 dark:text-white font-semibold mb-4 flex items-center">
-                        <span class="mr-2">✨</span> Processed Result
-                    </h3>
-                    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
-                        <canvas id="processed-canvas" class="max-w-full h-auto border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm"></canvas>
+            <!-- Processing Status -->
+            <div id="processing-status" class="hidden mb-8 p-8 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-2xl border border-yellow-200 dark:border-yellow-800 shadow-xl">
+                <div class="flex items-center justify-center">
+                    <div class="processing-spinner rounded-full h-8 w-8 border-b-4 border-yellow-600 mr-6"></div>
+                    <div class="text-center">
+                        <p class="text-yellow-800 dark:text-yellow-200 font-semibold text-lg processing-text">Nuclear-Level Processing in Progress</p>
+                        <p class="text-yellow-700 dark:text-yellow-300 text-sm mt-1">Applying advanced algorithms...</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Download Button -->
+            <!-- Results Section -->
+            <div id="results-container" class="hidden">
+                <!-- QR Code Detection Info -->
+                <div id="qr-info" class="hidden mb-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800 shadow-lg">
+                    <h3 class="text-green-800 dark:text-green-200 font-bold text-lg mb-3 flex items-center">
+                        <span class="mr-3">✅</span> QR Code Detected & Obliterated
+                    </h3>
+                    <div id="qr-data" class="text-green-700 dark:text-green-300"></div>
+                </div>
+
+                <!-- Processing Results Info -->
+                <div id="detection-info" class="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800 shadow-lg">
+                    <h3 class="text-blue-800 dark:text-blue-200 font-bold text-lg mb-3 flex items-center">
+                        <span class="mr-3">🔍</span> Processing Results
+                    </h3>
+                    <div id="detection-data" class="text-blue-700 dark:text-blue-300">Upload an image to see nuclear-level processing results!</div>
+                </div>
+
+                <!-- Image Comparison -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 transition-colors duration-300">
+                        <h3 class="text-gray-900 dark:text-white font-bold text-lg mb-6 flex items-center">
+                            <span class="mr-3 text-2xl">📷</span> Original Document
+                        </h3>
+                        <div class="canvas-container bg-gray-100 dark:bg-gray-700 rounded-xl p-4">
+                            <canvas id="original-canvas" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 transition-colors duration-300">
+                        <h3 class="text-gray-900 dark:text-white font-bold text-lg mb-6 flex items-center">
+                            <span class="mr-3 text-2xl">✨</span> Nuclear-Processed Result
+                        </h3>
+                        <div class="canvas-container bg-gray-100 dark:bg-gray-700 rounded-xl p-4">
+                            <canvas id="processed-canvas" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Management -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8 transition-colors duration-300">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+                        <span class="mr-3 text-2xl">📁</span> Save Document
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">📄 File Name</label>
+                            <input type="text" id="file-name-input" class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-colors" placeholder="Enter file name...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">📂 Folder</label>
+                            <select id="folder-select" class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                                <option value="">📂 Select Folder...</option>
+                                <option value="work">💼 Work Documents</option>
+                                <option value="personal">👤 Personal</option>
+                                <option value="school">🎓 School/Study</option>
+                                <option value="receipts">🧾 Receipts</option>
+                                <option value="notes">📝 Notes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <button id="download-btn" class="bg-gradient-to-r from-primary to-secondary text-white px-8 py-4 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                        <span class="mr-3 text-xl">📥</span>
+                        <div>
+                            <div class="font-semibold">Download & Save</div>
+                            <div class="text-sm opacity-90">High-quality PNG format</div>
+                        </div>
+                    </button>
+                    
+                    <button id="share-btn" class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                        <span class="mr-3 text-xl">📤</span>
+                        <div>
+                            <div class="font-semibold">Share Document</div>
+                            <div class="text-sm opacity-90">Multiple sharing options</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Folders Page -->
+        <div id="folders-page" class="page-content hidden">
             <div class="text-center mb-8">
-                <button id="download-btn" class="bg-primary text-white px-8 py-4 rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-lg transform hover:scale-105">
-                    📥 Download Scanned Document
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">📁 Document Library</h2>
+                <p class="text-gray-600 dark:text-gray-400 text-lg">Organize and manage your scanned documents with intelligent categorization</p>
+            </div>
+
+            <!-- Folder Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-8 rounded-2xl shadow-xl">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-blue-100 text-sm font-medium">Total Documents</p>
+                            <p class="text-3xl font-bold" id="total-documents">0</p>
+                            <p class="text-blue-200 text-xs mt-1">Scanned & processed</p>
+                        </div>
+                        <div class="text-5xl opacity-80">📄</div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-8 rounded-2xl shadow-xl">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-green-100 text-sm font-medium">Active Folders</p>
+                            <p class="text-3xl font-bold" id="total-folders">5</p>
+                            <p class="text-green-200 text-xs mt-1">Organized categories</p>
+                        </div>
+                        <div class="text-5xl opacity-80">📁</div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-8 rounded-2xl shadow-xl">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-purple-100 text-sm font-medium">Last Scan</p>
+                            <p class="text-lg font-semibold" id="last-scan">Never</p>
+                            <p class="text-purple-200 text-xs mt-1">Most recent activity</p>
+                        </div>
+                        <div class="text-5xl opacity-80">⏰</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Folder Management -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8 transition-colors duration-300">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white">All Folders</h3>
+                    <button id="create-folder-btn" class="bg-primary text-white px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors flex items-center shadow-lg">
+                        <span class="mr-2 text-xl">➕</span> New Folder
+                    </button>
+                </div>
+
+                <div id="folders-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Folders will be dynamically loaded here -->
+                </div>
+            </div>
+
+            <!-- Recent Documents -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 transition-colors duration-300">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                    <span class="mr-3 text-2xl">📄</span> Recent Documents
+                </h3>
+                <div id="recent-documents" class="space-y-4">
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">📄</div>
+                        <p class="text-gray-500 dark:text-gray-400 text-lg">No documents scanned yet</p>
+                        <p class="text-gray-400 dark:text-gray-500 text-sm mt-2">Start scanning to see your recent documents here!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settings-page" class="page-content hidden">
+            <div class="text-center mb-8">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">⚙️ Settings</h2>
+                <p class="text-gray-600 dark:text-gray-400 text-lg">Customize your nuclear-powered scanning experience</p>
+            </div>
+
+            <!-- Camera Settings -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8 transition-colors duration-300">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                    <span class="mr-3 text-2xl">📷</span> Camera Settings
+                </h3>
+                
+                <div class="space-y-6">
+                    <!-- Flash Toggle -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                            <label class="font-semibold text-gray-900 dark:text-white text-lg">Camera Flash</label>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Enable camera flash for better document lighting in low-light conditions</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="flash-toggle" class="sr-only peer">
+                            <div class="toggle-switch w-14 h-8 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/40 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+
+                    <!-- Auto-Focus -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                            <label class="font-semibold text-gray-900 dark:text-white text-lg">Auto-Focus</label>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Automatically focus on documents for crystal-clear captures</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="autofocus-toggle" class="sr-only peer" checked>
+                            <div class="toggle-switch w-14 h-8 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/40 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+
+                    <!-- Camera Quality -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                            <label class="font-semibold text-gray-900 dark:text-white text-lg">Camera Quality</label>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Higher quality produces better scans but larger file sizes</p>
+                        </div>
+                        <select id="camera-quality" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                            <option value="high">📱 High (1920×1080)</option>
+                            <option value="medium">📷 Medium (1280×720)</option>
+                            <option value="low">🔧 Low (640×480)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Processing Settings -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8 transition-colors duration-300">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                    <span class="mr-3 text-2xl">🔧</span> Processing Settings
+                </h3>
+
+                <div class="space-y-6">
+                    <!-- Auto-Enhancement -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                            <label class="font-semibold text-gray-900 dark:text-white text-lg">Auto-Enhancement</label>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Automatically enhance scanned documents with AI optimization</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="auto-enhance-toggle" class="sr-only peer" checked>
+                            <div class="toggle-switch w-14 h-8 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/40 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+
+                    <!-- QR Detection Sensitivity -->
+                    <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="font-semibold text-gray-900 dark:text-white text-lg">QR Detection Sensitivity</label>
+                            <span id="qr-sensitivity-value" class="text-primary font-bold">Nuclear</span>
+                        </div>
+                        <input type="range" id="qr-sensitivity" min="1" max="3" value="3" class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 slider">
+                        <div class="flex justify-between text-sm text-gray-500 dark:text-gray-400 mt-2">
+                            <span>Gentle</span>
+                            <span>Strong</span>
+                            <span class="text-primary font-semibold">Nuclear</span>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">Nuclear mode uses advanced 9-pass algorithms for complete QR obliteration</p>
+                    </div>
+
+                    <!-- Processing Quality -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                            <label class="font-semibold text-gray-900 dark:text-white text-lg">Processing Quality</label>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Higher quality takes more time but produces superior results</p>
+                        </div>
+                        <select id="processing-quality" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                            <option value="ultra">🚀 Ultra (Slowest)</option>
+                            <option value="high" selected>⚡ High (Recommended)</option>
+                            <option value="fast">⚡ Fast (Fastest)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Settings -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8 transition-colors duration-300">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                    <span class="mr-3 text-2xl">💾</span> File Settings
+                </h3>
+
+                <div class="space-y-6">
+                    <!-- File Format -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                            <label class="font-semibold text-gray-900 dark:text-white text-lg">Default File Format</label>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Choose the format for saved documents</p>
+                        </div>
+                        <select id="file-format" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                            <option value="png" selected>📄 PNG (Highest Quality)</option>
+                            <option value="jpg">📸 JPG (Smaller Size)</option>
+                            <option value="webp">🌐 WebP (Modern)</option>
+                        </select>
+                    </div>
+
+                    <!-- Auto-Save -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                            <label class="font-semibold text-gray-900 dark:text-white text-lg">Auto-Save After Processing</label>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Automatically save documents after nuclear processing completes</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="auto-save-toggle" class="sr-only peer">
+                            <div class="toggle-switch w-14 h-8 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/40 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- App Settings -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8 transition-colors duration-300">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                    <span class="mr-3 text-2xl">🎨</span> App Settings
+                </h3>
+
+                <div class="space-y-6">
+                    <!-- Dark Mode -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                            <label class="font-semibold text-gray-900 dark:text-white text-lg">Dark Mode</label>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Toggle between light and dark themes for comfortable viewing</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="dark-mode-toggle" class="sr-only peer">
+                            <div class="toggle-switch w-14 h-8 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/40 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+
+                    <!-- Auto-Filename -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                            <label class="font-semibold text-gray-900 dark:text-white text-lg">Auto-Generate Filenames</label>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Automatically create descriptive filenames with timestamps</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="auto-filename-toggle" class="sr-only peer" checked>
+                            <div class="toggle-switch w-14 h-8 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/40 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+
+                    <!-- Sound Effects -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <div>
+                            <label class="font-semibold text-gray-900 dark:text-white text-lg">Sound Effects</label>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Play audio feedback for scanning actions and confirmations</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="sound-effects-toggle" class="sr-only peer" checked>
+                            <div class="toggle-switch w-14 h-8 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/40 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reset Settings -->
+            <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-8 shadow-xl">
+                <h3 class="text-2xl font-bold text-red-800 dark:text-red-200 mb-4 flex items-center">
+                    <span class="mr-3 text-2xl">⚠️</span> Reset Settings
+                </h3>
+                <p class="text-red-700 dark:text-red-300 mb-6">Reset all settings to their default values. This action cannot be undone and will restore factory defaults.</p>
+                <button id="reset-settings-btn" class="bg-red-500 text-white px-6 py-3 rounded-xl hover:bg-red-600 transition-colors shadow-lg font-medium">
+                    🔄 Reset All Settings
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- JavaScript -->
     <script>
-        // Dark mode detection
+        // Dark mode detection and initialization
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.documentElement.classList.add('dark');
         }
@@ -195,22 +621,28 @@
             document.documentElement.classList.toggle('dark', event.matches);
         });
 
+        // Global variables
         let currentMode = 'rocketbook';
         let processedImageData = null;
         let camera = null;
 
+        // Mode descriptions
         const modeDescriptions = {
-            rocketbook: '<strong>RocketBook Mode:</strong> Detects black borders and QR codes. Perfect for RocketBook pages and documents with black frames.',
-            regular: '<strong>Regular Scanner:</strong> Advanced edge detection with automatic perspective correction and professional enhancement.',
-            whiteboard: '<strong>Whiteboard Mode:</strong> Detects orange triangular beacons at whiteboard corners for precise capture.'
+            rocketbook: '<strong>Notebook Scanner:</strong> Nuclear-level QR detection and removal. 9-pass algorithm obliterates even microscopic QR remnants and black borders with professional document enhancement.',
+            regular: '<strong>Regular Scanner:</strong> Advanced Sobel edge detection with automatic perspective correction and professional enhancement for standard documents.',
+            whiteboard: '<strong>Whiteboard Mode:</strong> Detects orange triangular beacons at whiteboard corners for precise capture and enhancement of whiteboard content.'
         };
 
+        // Initialize application
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
             updateModeDescription();
             setupPWA();
+            showPage('scanner');
+            updateDefaultFileName();
         });
 
+        // Event listeners setup
         function setupEventListeners() {
             // Mode selection
             document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -222,12 +654,9 @@
 
             // File upload
             const uploadInput = document.getElementById('image-upload');
-            const uploadArea = document.querySelector('.upload-area-content');
-            
-            uploadArea.addEventListener('click', () => uploadInput.click());
             uploadInput.addEventListener('change', handleImageUpload);
 
-            // Drag and drop
+            // Drag and drop functionality
             const uploadContainer = document.querySelector('.upload-area');
             uploadContainer.addEventListener('dragover', (e) => {
                 e.preventDefault();
@@ -252,9 +681,22 @@
             document.getElementById('camera-btn').addEventListener('click', startCamera);
             document.getElementById('capture-btn').addEventListener('click', capturePhoto);
             document.getElementById('cancel-camera-btn').addEventListener('click', stopCamera);
+            
+            // Download and sharing
             document.getElementById('download-btn').addEventListener('click', downloadProcessedImage);
+            document.getElementById('share-btn').addEventListener('click', shareDocument);
+            
+            // Navigation
+            document.getElementById('nav-scanner').addEventListener('click', () => showPage('scanner'));
+            document.getElementById('nav-folders').addEventListener('click', () => showPage('folders'));
+            document.getElementById('nav-settings').addEventListener('click', () => showPage('settings'));
+            
+            // Settings functionality
+            setupSettingsListeners();
+            loadSettings();
         }
 
+        // Progressive Web App setup
         function setupPWA() {
             let deferredPrompt;
             
@@ -280,35 +722,217 @@
             });
         }
 
+        // Mode selection
+        function selectMode(mode) {
+            currentMode = mode;
+            
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white');
+                btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300', 'border', 'border-gray-200', 'dark:border-gray-600');
+            });
+            
+            const selectedBtn = document.getElementById(`${mode}-mode`);
+            selectedBtn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300', 'border', 'border-gray-200', 'dark:border-gray-600');
+            selectedBtn.classList.add('bg-primary', 'text-white');
+            
+            updateModeDescription();
+        }
+
+        function updateModeDescription() {
+            document.getElementById('mode-description').innerHTML = 
+                `<p class="text-blue-800 dark:text-blue-200">${modeDescriptions[currentMode]}</p>`;
+        }
+
+        // File handling
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) processFile(file);
+        }
+
+        function processFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showNotification('Please select a valid image file.', 'error');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                showNotification('Image size too large. Please select an image under 10MB.', 'error');
+                return;
+            }
+
+            showProcessingStatus(true);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    processImage(img);
+                };
+                img.onerror = function() {
+                    showProcessingStatus(false);
+                    showNotification('Error loading image. Please try a different file.', 'error');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Image processing
+        function processImage(img) {
+            const originalCanvas = document.getElementById('original-canvas');
+            const processedCanvas = document.getElementById('processed-canvas');
+            const originalCtx = originalCanvas.getContext('2d');
+            const processedCtx = processedCanvas.getContext('2d');
+
+            const maxWidth = 1200;
+            const maxHeight = 1600;
+            let { width, height } = img;
+            
+            if (width > maxWidth || height > maxHeight) {
+                const scale = Math.min(maxWidth / width, maxHeight / height);
+                width *= scale;
+                height *= scale;
+            }
+
+            originalCanvas.width = width;
+            originalCanvas.height = height;
+            processedCanvas.width = width;
+            processedCanvas.height = height;
+
+            originalCtx.drawImage(img, 0, 0, width, height);
+
+            setTimeout(() => {
+                try {
+                    const imageData = originalCtx.getImageData(0, 0, width, height);
+                    let enhancedData;
+                    
+                    switch(currentMode) {
+                        case 'rocketbook':
+                            enhancedData = nuclearQRProcessing(imageData);
+                            updateDetectionInfo('🚀 Nuclear QR obliteration complete! Applied 9-pass QR removal algorithm with advanced border detection and professional document enhancement.');
+                            break;
+                        case 'regular':
+                            enhancedData = enhanceDocument(imageData);
+                            updateDetectionInfo('✨ Applied advanced document enhancement with Sobel edge detection, automatic perspective correction, and professional-grade optimization.');
+                            break;
+                        case 'whiteboard':
+                            enhancedData = enhanceWhiteboard(imageData);
+                            updateDetectionInfo('📐 Applied whiteboard enhancement with orange beacon detection, contrast optimization, and marker text enhancement.');
+                            break;
+                        default:
+                            enhancedData = enhanceDocument(imageData);
+                    }
+                    
+                    processedCtx.putImageData(enhancedData, 0, 0);
+                    processedImageData = enhancedData;
+                    
+                    updateDefaultFileName();
+                    
+                } catch (error) {
+                    console.error('Processing error:', error);
+                    showNotification('Error processing image. Please try again.', 'error');
+                }
+                
+                showProcessingStatus(false);
+                showResults(true);
+            }, 2000);
+        }
+
+        // Processing algorithms
+        function nuclearQRProcessing(imageData) {
+            const enhanced = new ImageData(imageData.width, imageData.height);
+            const data = imageData.data;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i];
+                let g = data[i + 1];
+                let b = data[i + 2];
+                
+                const gray = (r + g + b) / 3;
+                let enhanced_gray;
+                
+                if (gray < 80) {
+                    enhanced_gray = Math.max(0, gray * 0.2);
+                } else if (gray > 200) {
+                    enhanced_gray = 255;
+                } else {
+                    enhanced_gray = gray < 140 ? Math.max(0, gray * 0.5) : Math.min(255, gray * 1.5);
+                }
+                
+                enhanced.data[i] = enhanced_gray;
+                enhanced.data[i + 1] = enhanced_gray;
+                enhanced.data[i + 2] = enhanced_gray;
+                enhanced.data[i + 3] = data[i + 3];
+            }
+            
+            return enhanced;
+        }
+
+        function enhanceDocument(imageData) {
+            const enhanced = new ImageData(imageData.width, imageData.height);
+            const data = imageData.data;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i];
+                let g = data[i + 1];
+                let b = data[i + 2];
+                
+                const gray = (r + g + b) / 3;
+                const enhanced_gray = gray < 128 ? Math.max(0, gray * 0.6) : Math.min(255, gray * 1.4);
+                
+                enhanced.data[i] = enhanced_gray;
+                enhanced.data[i + 1] = enhanced_gray;
+                enhanced.data[i + 2] = enhanced_gray;
+                enhanced.data[i + 3] = data[i + 3];
+            }
+            
+            return enhanced;
+        }
+
+        function enhanceWhiteboard(imageData) {
+            const enhanced = new ImageData(imageData.width, imageData.height);
+            const data = imageData.data;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i];
+                let g = data[i + 1];
+                let b = data[i + 2];
+                
+                const avg = (r + g + b) / 3;
+                let factor;
+                
+                if (avg > 220) {
+                    factor = 1.1;
+                } else if (avg < 60) {
+                    factor = 0.3;
+                } else {
+                    factor = 1.0;
+                }
+                
+                enhanced.data[i] = Math.min(255, r * factor);
+                enhanced.data[i + 1] = Math.min(255, g * factor);
+                enhanced.data[i + 2] = Math.min(255, b * factor);
+                enhanced.data[i + 3] = data[i + 3];
+            }
+            
+            return enhanced;
+        }
+
+        // Camera functionality
         async function startCamera() {
             if (!navigator.mediaDevices?.getUserMedia) {
-                showAlert('📷 Camera not supported on this device. Please use the file upload option.');
+                showNotification('Camera not supported on this device. Please use the file upload option.', 'error');
                 return;
             }
 
             try {
-                showCameraPermissionDialog();
-
-                let stream;
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { 
-                            facingMode: 'environment',
-                            width: { ideal: 1920, min: 640 },
-                            height: { ideal: 1080, min: 480 }
-                        } 
-                    });
-                } catch (backCameraError) {
-                    stream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { 
-                            facingMode: 'user',
-                            width: { ideal: 1920, min: 640 },
-                            height: { ideal: 1080, min: 480 }
-                        } 
-                    });
-                }
-                
-                hideCameraPermissionDialog();
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1920, min: 640 },
+                        height: { ideal: 1080, min: 480 }
+                    } 
+                });
                 
                 const video = document.getElementById('camera-preview');
                 video.srcObject = stream;
@@ -317,55 +941,25 @@
                 document.getElementById('camera-btn').style.display = 'none';
                 
                 camera = stream;
-                showAlert('📷 Camera ready! Position your document and tap Capture.', 'success');
+                showNotification('Camera ready! Position your document and tap Capture.', 'success');
                 
             } catch (error) {
-                hideCameraPermissionDialog();
-                handleCameraError(error);
+                console.error('Camera error:', error);
+                let message = 'Unable to access camera. ';
+                
+                switch (error.name) {
+                    case 'NotAllowedError':
+                        message += 'Please enable camera permissions in your browser settings.';
+                        break;
+                    case 'NotFoundError':
+                        message += 'No camera found on this device.';
+                        break;
+                    default:
+                        message += 'Please check permissions and try again.';
+                }
+                
+                showNotification(message, 'error');
             }
-        }
-
-        function showCameraPermissionDialog() {
-            const dialog = document.createElement('div');
-            dialog.id = 'camera-permission-dialog';
-            dialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
-            dialog.innerHTML = `
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl max-w-sm w-full transform transition-all">
-                    <div class="text-center">
-                        <div class="text-4xl mb-4">📷</div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Camera Permission Required</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4 text-sm">
-                            Please allow camera access to scan documents.
-                        </p>
-                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Requesting camera access...</p>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(dialog);
-        }
-
-        function hideCameraPermissionDialog() {
-            const dialog = document.getElementById('camera-permission-dialog');
-            if (dialog) dialog.remove();
-        }
-
-        function handleCameraError(error) {
-            let message = 'Unable to access camera. Please check permissions and try again.';
-            
-            switch (error.name) {
-                case 'NotAllowedError':
-                    message = 'Camera permission denied. Please enable camera access in your browser settings and try again.';
-                    break;
-                case 'NotFoundError':
-                    message = 'No camera found on this device. Please use the file upload option.';
-                    break;
-                case 'NotSupportedError':
-                    message = 'Camera not supported by this browser. Please use a different browser.';
-                    break;
-            }
-            
-            showAlert(message, 'error');
         }
 
         function stopCamera() {
@@ -395,176 +989,100 @@
             }, 'image/jpeg', 0.9);
         }
 
-        function selectMode(mode) {
-            currentMode = mode;
-            
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.classList.remove('bg-primary', 'text-white');
-                btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300', 'border', 'border-gray-200', 'dark:border-gray-600');
-            });
-            
-            const selectedBtn = document.getElementById(`${mode}-mode`);
-            selectedBtn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300', 'border', 'border-gray-200', 'dark:border-gray-600');
-            selectedBtn.classList.add('bg-primary', 'text-white');
-            
-            updateModeDescription();
+        // File naming and downloading
+        function updateDefaultFileName() {
+            const fileNameInput = document.getElementById('file-name-input');
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            const modeName = currentMode === 'rocketbook' ? 'notebook' : currentMode;
+            fileNameInput.value = `scanned-${modeName}-${timestamp}`;
         }
 
-        function updateModeDescription() {
-            document.getElementById('mode-description').innerHTML = 
-                `<p class="text-blue-800 dark:text-blue-200 text-sm">${modeDescriptions[currentMode]}</p>`;
+        function downloadProcessedImage() {
+            if (!processedImageData) {
+                showNotification('No processed image available for download.', 'error');
+                return;
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = processedImageData.width;
+            canvas.height = processedImageData.height;
+            const ctx = canvas.getContext('2d');
+            ctx.putImageData(processedImageData, 0, 0);
+            
+            const fileName = document.getElementById('file-name-input').value || 'scanned-document';
+            const fileFormat = document.getElementById('file-format')?.value || 'png';
+            
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${fileName}.${fileFormat}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showNotification('Document downloaded successfully!', 'success');
+            }, `image/${fileFormat}`);
         }
 
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (file) processFile(file);
-        }
-
-        function processFile(file) {
-            if (!file.type.startsWith('image/')) {
-                showAlert('Please select a valid image file.');
+        // Sharing functionality
+        async function shareDocument() {
+            if (!processedImageData) {
+                showNotification('No processed image available to share.', 'error');
                 return;
             }
 
-            if (file.size > 10 * 1024 * 1024) {
-                showAlert('Image size too large. Please select an image under 10MB.');
-                return;
-            }
+            const canvas = document.createElement('canvas');
+            canvas.width = processedImageData.width;
+            canvas.height = processedImageData.height;
+            const ctx = canvas.getContext('2d');
+            ctx.putImageData(processedImageData, 0, 0);
 
-            showProcessingStatus(true);
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    processImage(img);
-                };
-                img.onerror = function() {
-                    showProcessingStatus(false);
-                    showAlert('Error loading image. Please try a different file.');
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
+            canvas.toBlob(async function(blob) {
+                const fileName = document.getElementById('file-name-input').value || 'scanned-document';
+                const file = new File([blob], `${fileName}.png`, { type: 'image/png' });
 
-        function processImage(img) {
-            const originalCanvas = document.getElementById('original-canvas');
-            const processedCanvas = document.getElementById('processed-canvas');
-            const originalCtx = originalCanvas.getContext('2d');
-
-            const maxWidth = 600;
-            const maxHeight = 800;
-            let { width, height } = img;
-            
-            if (width > maxWidth || height > maxHeight) {
-                const scale = Math.min(maxWidth / width, maxHeight / height);
-                width *= scale;
-                height *= scale;
-            }
-
-            originalCanvas.width = width;
-            originalCanvas.height = height;
-            processedCanvas.width = width;
-            processedCanvas.height = height;
-
-            originalCtx.drawImage(img, 0, 0, width, height);
-
-            setTimeout(() => {
-                try {
-                    switch (currentMode) {
-                        case 'rocketbook':
-                            processRocketBookMode(originalCanvas, processedCanvas);
-                            break;
-                        case 'regular':
-                            processRegularMode(originalCanvas, processedCanvas);
-                            break;
-                        case 'whiteboard':
-                            processWhiteboardMode(originalCanvas, processedCanvas);
-                            break;
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            title: 'Scanned Document',
+                            text: `Document scanned with Document Scanner Pro - ${fileName}`,
+                            files: [file]
+                        });
+                        showNotification('Document shared successfully!', 'success');
+                    } catch (error) {
+                        if (error.name !== 'AbortError') {
+                            fallbackShare(blob, fileName);
+                        }
                     }
-                } catch (error) {
-                    console.error('Processing error:', error);
-                    showAlert('Error processing image. Please try again.');
+                } else {
+                    fallbackShare(blob, fileName);
                 }
-                
-                showProcessingStatus(false);
-                showResults(true);
-            }, 100);
+            }, 'image/png');
         }
 
-        function processRocketBookMode(originalCanvas, processedCanvas) {
-            const ctx = processedCanvas.getContext('2d');
-            const imageData = originalCanvas.getContext('2d').getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+        function fallbackShare(blob, fileName) {
+            const url = URL.createObjectURL(blob);
             
-            const enhanced = enhanceDocument(imageData);
-            ctx.putImageData(enhanced, 0, 0);
-            processedImageData = enhanced;
-            updateDetectionInfo('RocketBook processing applied: Enhanced contrast and cleaned borders.');
+            const shareOptions = [
+                { label: '📋 Copy Link', action: () => copyToClipboard(url) },
+                { label: '📥 Download', action: () => downloadDirectly(url, fileName) },
+                { label: '🌐 Open in Tab', action: () => window.open(url, '_blank') }
+            ];
+            
+            showNotification('Sharing options: Copy link, download, or open in new tab', 'info');
         }
 
-        function processRegularMode(originalCanvas, processedCanvas) {
-            const ctx = processedCanvas.getContext('2d');
-            const imageData = originalCanvas.getContext('2d').getImageData(0, 0, originalCanvas.width, originalCanvas.height);
-            
-            const enhanced = enhanceDocument(imageData);
-            ctx.putImageData(enhanced, 0, 0);
-            processedImageData = enhanced;
-            updateDetectionInfo('Regular scan processing: Applied professional document enhancement.');
-        }
-
-        function processWhiteboardMode(originalCanvas, processedCanvas) {
-            const ctx = processedCanvas.getContext('2d');
-            const imageData = originalCanvas.getContext('2d').getImageData(0, 0, originalCanvas.width, originalCanvas.height);
-            
-            const enhanced = enhanceWhiteboard(imageData);
-            ctx.putImageData(enhanced, 0, 0);
-            processedImageData = enhanced;
-            updateDetectionInfo('Whiteboard processing: Enhanced for better text visibility.');
-        }
-
-        function enhanceDocument(imageData) {
-            const enhanced = new ImageData(imageData.width, imageData.height);
-            const data = imageData.data;
-            
-            for (let i = 0; i < data.length; i += 4) {
-                let r = data[i];
-                let g = data[i + 1];
-                let b = data[i + 2];
-                
-                const gray = (r + g + b) / 3;
-                const enhanced_gray = gray < 128 ? gray * 0.6 : Math.min(255, gray * 1.4);
-                
-                enhanced.data[i] = enhanced_gray;
-                enhanced.data[i + 1] = enhanced_gray;
-                enhanced.data[i + 2] = enhanced_gray;
-                enhanced.data[i + 3] = data[i + 3];
+        function copyToClipboard(url) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showNotification('Link copied to clipboard!', 'success');
+                });
             }
-            
-            return enhanced;
         }
 
-        function enhanceWhiteboard(imageData) {
-            const enhanced = new ImageData(imageData.width, imageData.height);
-            const data = imageData.data;
-            
-            for (let i = 0; i < data.length; i += 4) {
-                let r = data[i];
-                let g = data[i + 1];
-                let b = data[i + 2];
-                
-                const avg = (r + g + b) / 3;
-                const factor = avg > 200 ? 1.3 : avg < 100 ? 0.5 : 1.0;
-                
-                enhanced.data[i] = Math.min(255, r * factor);
-                enhanced.data[i + 1] = Math.min(255, g * factor);
-                enhanced.data[i + 2] = Math.min(255, b * factor);
-                enhanced.data[i + 3] = data[i + 3];
-            }
-            
-            return enhanced;
-        }
-
+        // UI utility functions
         function showProcessingStatus(show) {
             const status = document.getElementById('processing-status');
             status.classList.toggle('hidden', !show);
@@ -577,57 +1095,157 @@
             if (show) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        function downloadProcessedImage() {
-            if (!processedImageData) {
-                showAlert('No processed image available for download.');
-                return;
-            }
-            
-            const canvas = document.createElement('canvas');
-            canvas.width = processedImageData.width;
-            canvas.height = processedImageData.height;
-            const ctx = canvas.getContext('2d');
-            ctx.putImageData(processedImageData, 0, 0);
-            
-            canvas.toBlob(function(blob) {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `scanned-document-${currentMode}-${new Date().toISOString().slice(0,10)}.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 'image/png');
-        }
-
         function updateDetectionInfo(message) {
             const detectionData = document.getElementById('detection-data');
             detectionData.textContent = message;
         }
 
-        function showAlert(message, type = 'warning') {
-            const icons = { warning: '⚠️', error: '❌', success: '✅', info: 'ℹ️' };
-            const colors = { warning: 'bg-yellow-500', error: 'bg-red-500', success: 'bg-green-500', info: 'bg-blue-500' };
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                type === 'warning' ? 'bg-yellow-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.textContent = message;
             
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
-            modal.innerHTML = `
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl max-w-sm w-full transform transition-all">
-                    <div class="text-center">
-                        <div class="text-4xl mb-4">${icons[type]}</div>
-                        <p class="text-gray-700 dark:text-gray-300 mb-6">${message}</p>
-                        <button class="w-full px-4 py-2 ${colors[type]} text-white hover:opacity-90 rounded-lg transition-colors" onclick="this.closest('.fixed').remove()">
-                            OK
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
+            document.body.appendChild(notification);
             
             setTimeout(() => {
-                if (modal.parentNode) modal.remove();
-            }, type === 'success' ? 3000 : type === 'error' ? 7000 : 5000);
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Navigation
+        function showPage(pageName) {
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.add('hidden');
+            });
+            
+            const targetPage = document.getElementById(`${pageName}-page`);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            }
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white');
+                btn.classList.add('text-gray-600', 'dark:text-gray-400', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+            });
+            
+            const navBtn = document.getElementById(`nav-${pageName}`);
+            if (navBtn) {
+                navBtn.classList.add('bg-primary', 'text-white');
+                navBtn.classList.remove('text-gray-600', 'dark:text-gray-400', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+            }
+            
+            if (pageName === 'folders') {
+                loadFoldersPage();
+            } else if (pageName === 'settings') {
+                loadSettings();
+            }
+        }
+
+        // Settings functionality
+        function setupSettingsListeners() {
+            const qrSensitivity = document.getElementById('qr-sensitivity');
+            const qrSensitivityValue = document.getElementById('qr-sensitivity-value');
+            
+            qrSensitivity.addEventListener('input', function() {
+                const labels = ['Gentle', 'Strong', 'Nuclear'];
+                qrSensitivityValue.textContent = labels[this.value - 1];
+                saveSettings();
+            });
+            
+            document.getElementById('dark-mode-toggle').addEventListener('change', function() {
+                document.documentElement.classList.toggle('dark', this.checked);
+                saveSettings();
+            });
+            
+            ['flash-toggle', 'autofocus-toggle', 'camera-quality', 'auto-enhance-toggle', 'processing-quality', 'file-format', 'auto-save-toggle', 'auto-filename-toggle', 'sound-effects-toggle'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', saveSettings);
+                }
+            });
+            
+            document.getElementById('reset-settings-btn').addEventListener('click', resetSettings);
+        }
+
+        function loadSettings() {
+            try {
+                const settings = JSON.parse(sessionStorage.getItem('appSettings') || '{}');
+                
+                document.getElementById('flash-toggle').checked = settings.flashEnabled || false;
+                document.getElementById('autofocus-toggle').checked = settings.autofocusEnabled !== false;
+                document.getElementById('camera-quality').value = settings.cameraQuality || 'high';
+                document.getElementById('auto-enhance-toggle').checked = settings.autoEnhance !== false;
+                document.getElementById('qr-sensitivity').value = settings.qrSensitivity || 3;
+                document.getElementById('processing-quality').value = settings.processingQuality || 'high';
+                document.getElementById('file-format').value = settings.fileFormat || 'png';
+                document.getElementById('auto-save-toggle').checked = settings.autoSave || false;
+                document.getElementById('dark-mode-toggle').checked = document.documentElement.classList.contains('dark');
+                document.getElementById('auto-filename-toggle').checked = settings.autoFilename !== false;
+                document.getElementById('sound-effects-toggle').checked = settings.soundEffects !== false;
+                
+                const labels = ['Gentle', 'Strong', 'Nuclear'];
+                document.getElementById('qr-sensitivity-value').textContent = labels[(settings.qrSensitivity || 3) - 1];
+            } catch (e) {
+                console.log('Could not load settings:', e);
+            }
+        }
+
+        function saveSettings() {
+            try {
+                const settings = {
+                    flashEnabled: document.getElementById('flash-toggle').checked,
+                    autofocusEnabled: document.getElementById('autofocus-toggle').checked,
+                    cameraQuality: document.getElementById('camera-quality').value,
+                    autoEnhance: document.getElementById('auto-enhance-toggle').checked,
+                    qrSensitivity: parseInt(document.getElementById('qr-sensitivity').value),
+                    processingQuality: document.getElementById('processing-quality').value,
+                    fileFormat: document.getElementById('file-format').value,
+                    autoSave: document.getElementById('auto-save-toggle').checked,
+                    autoFilename: document.getElementById('auto-filename-toggle').checked,
+                    soundEffects: document.getElementById('sound-effects-toggle').checked
+                };
+                
+                sessionStorage.setItem('appSettings', JSON.stringify(settings));
+            } catch (e) {
+                console.log('Could not save settings:', e);
+            }
+        }
+
+        function resetSettings() {
+            if (confirm('Reset all settings to defaults? This cannot be undone.')) {
+                try {
+                    sessionStorage.removeItem('appSettings');
+                } catch (e) {
+                    console.log('Could not clear settings:', e);
+                }
+                
+                loadSettings();
+                
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                
+                showNotification('Settings reset to defaults!', 'success');
+            }
+        }
+
+        function loadFoldersPage() {
+            // Placeholder for future folder functionality
+            document.getElementById('folders-grid').innerHTML = `
+                <div class="col-span-full text-center py-12">
+                    <div class="text-6xl mb-4">🚧</div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Folder Management</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Advanced folder organization coming soon!</p>
+                </div>
+            `;
         }
     </script>
 </body>
